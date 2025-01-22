@@ -1,0 +1,28 @@
+run:
+  skip-dirs:
+    - "vendor"
+    - "build"
+    - "third_party"
+
+issues:
+  exclude-use-default: false 
+  exclude:
+    - "runtime/time.go"  
+    - ".*_test.go"       
+    - "mocks/.*"       
+
+linters:
+  enable:
+    - gofmt
+    - gosec
+    - golint
+    - govet
+    - ineffassign
+    - errcheck
+  disable:
+    - lll  
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  uniq-by-line: true

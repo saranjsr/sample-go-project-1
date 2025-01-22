@@ -1,0 +1,59 @@
+name: Release Go Application
+
+on:
+  release:
+    types: [created]  
+
+permissions:
+  contents: write 
+
+jobs:
+  test-build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.21 
+
+    # Run tests and save results
+    - name: Run Tests and Save Output
+      run: |
+        mkdir -p artifacts
+        go test ./... -v | tee artifacts/test-results.txt
+        go test ./... -cover -coverprofile=artifacts/coverage.out
+        go tool cover -html=artifacts/coverage.out -o artifacts/coverage.html
+
+    # Build the application for different platforms
+    - name: Build Go Application for Linux
+      run: GOOS=linux GOARCH=amd64 go build -o artifacts/my-app-linux
+
+    - name: Build Go Application for Windows
+      run: GOOS=windows GOARCH=amd64 go build -o artifacts/my-app-windows.exe
+
+    - name: Build Go Application for macOS
+      run: GOOS=darwin GOARCH=amd64 go build -o artifacts/my-app-macos
+
+    # Archive test results and build logs
+    - name: Archive Build and Test Results
+      run: |
+        tar -czf artifacts/build-and-test-results.tar.gz artifacts/test-results.txt artifacts/coverage.html
+
+    - name: List Files Before Upload
+      run: ls -lh artifacts/
+
+    # Upload all files to the GitHub release
+    - name: Upload Binaries and Test Results to GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          artifacts/my-app-linux
+          artifacts/my-app-windows.exe
+          artifacts/my-app-macos
+          artifacts/build-and-test-results.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
