@@ -67,5 +67,5 @@ jobs:
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.PHASE2_REPO_PAT }}" \
               -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/saranjsr/test-go-2/dispatches \
+          https://api.github.com/repos/saranjsr/sample-go-project-2/dispatches \
           -d '{"event_type": "release-trigger", "client_payload": { "tag": "'"${{ github.event.release.tag_name }}"'" }}'
