@@ -2,10 +2,10 @@ name: Release Go Application
 
 on:
   release:
-    types: [created]  # Trigger workflow when a new release is created
+    types: [created]  
 
 permissions:
-  contents: write  # Allows uploading release assets
+  contents: write  
 
 jobs:
   test-build-release:
@@ -18,7 +18,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.21  # Use the required Go version
+        go-version: 1.21
 
     # Run tests and save results
     - name: Run Tests and Save Output
