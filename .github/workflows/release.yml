@@ -2,10 +2,10 @@ name: Release Go Application
 
 on:
   release:
-    types: [created]  
+    types: [created]  # Trigger workflow when a new release is created
 
 permissions:
-  contents: write 
+  contents: write  # Allows uploading release assets
 
 jobs:
   test-build-release:
@@ -18,7 +18,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.21 
+        go-version: 1.21  # Use the required Go version
 
     # Run tests and save results
     - name: Run Tests and Save Output
@@ -30,13 +30,13 @@ jobs:
 
     # Build the application for different platforms
     - name: Build Go Application for Linux
-      run: GOOS=linux GOARCH=amd64 go build -o artifacts/my-app-linux
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o artifacts/my-app-linux
 
     - name: Build Go Application for Windows
-      run: GOOS=windows GOARCH=amd64 go build -o artifacts/my-app-windows.exe
+      run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o artifacts/my-app-windows.exe
 
     - name: Build Go Application for macOS
-      run: GOOS=darwin GOARCH=amd64 go build -o artifacts/my-app-macos
+      run: CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o artifacts/my-app-macos
 
     # Archive test results and build logs
     - name: Archive Build and Test Results
@@ -57,3 +57,15 @@ jobs:
           artifacts/build-and-test-results.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trigger-phase-2:
+      needs: test-build-release 
+      runs-on: ubuntu-latest
+
+      steps:
+      - name: Send Repository Dispatch Event to Phase 2
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.PHASE2_REPO_PAT }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/saranjsr/test-go-2/dispatches \
+          -d '{"event_type": "release-trigger", "client_payload": { "tag": "'"${{ github.event.release.tag_name }}"'" }}'
